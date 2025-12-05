@@ -21,6 +21,7 @@ jobs:
     executor: sidekick/base
     resource_class: large
     steps:
+      - checkout
       - sidekick/build_push_image:
           target: docker
   
@@ -39,4 +40,4 @@ workflows:
       - build_and_publish:
           context:
             - aws-infra-ecr
-            
+
