@@ -26,18 +26,20 @@ jobs:
           target: docker
   
 workflows:
-  # pr:
-  #   jobs:
-  #     - run_snyk:
-  #         context:
-  #           - aws-infra-ecr
-  #           - snyk-integration
-  #   unless:
-  #     equal: [dev, << pipeline.git.branch >>]
-
   pr:
+    jobs:
+      - run_snyk:
+          context:
+            - aws-infra-ecr
+            - snyk-integration
+    unless:
+      equal: [dev, << pipeline.git.branch >>]
+
+  dev:
     jobs:
       - build_and_publish:
           context:
             - aws-infra-ecr
-
+          filters:
+            branches:
+              only: dev
