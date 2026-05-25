@@ -110,6 +110,22 @@ ignore:
           exploitability: resource allocation in framework internals, not
           user-reachable endpoint.
         expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-15907551:
+    - '*':
+        reason: >-
+          jackson-core 2.19.4 (latest in 2.19.x line). Fix requires 2.21.2 but
+          jackson-annotations 2.21.x is not yet published, making a full-ecosystem
+          upgrade impossible without build breakage. Will upgrade when 2.21.x
+          annotations jar is released.
+        expires: 2026-06-30T00:00:00.000Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-15365924:
+    - '*':
+        reason: >-
+          jackson-core 2.19.4 (latest in 2.19.x line). Fix requires 2.21.2 but
+          jackson-annotations 2.21.x is not yet published, making a full-ecosystem
+          upgrade impossible without build breakage. Will upgrade when 2.21.x
+          annotations jar is released.
+        expires: 2026-06-30T00:00:00.000Z
   SNYK-JAVA-ORGLZ4-14219384:
     - '*':
         reason: >-
