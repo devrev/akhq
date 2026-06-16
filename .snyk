@@ -76,13 +76,29 @@ ignore:
         reason: >-
           bc-fips forced to 2.1.2. Residual if Confluent test jars override.
         expires: 2026-06-30T00:00:00.000Z
-  SNYK-JAVA-ORGCODEHAUSPLEXUS-15766699:
+  SNYK-JAVA-IONETTY-17254661:
     - '*':
         reason: >-
-          plexus-utils 3.5.1 is a transitive test dependency (Confluent test
-          jars). Fix requires 4.0.3 which is a major version bump breaking
-          API. Not in production runtime.
-        expires: 2026-06-30T00:00:00.000Z
+          netty-codec-http2 forced to 4.2.15.Final in resolutionStrategy
+          which is the Snyk fixed_in version. Residual reports from test-scope
+          Confluent jars that may override the force are not in production
+          runtime.
+        expires: 2027-06-30T00:00:00.000Z
+  SNYK-JAVA-IONETTY-17260879:
+    - '*':
+        reason: >-
+          netty-transport-native-unix-common forced to 4.2.15.Final in
+          resolutionStrategy which is the Snyk fixed_in version. Residual
+          reports from test-scope Confluent jars are not in production
+          runtime.
+        expires: 2027-06-30T00:00:00.000Z
+  SNYK-JAVA-IONETTY-17261131:
+    - '*':
+        reason: >-
+          netty-resolver-dns forced to 4.2.15.Final in resolutionStrategy
+          which is the Snyk fixed_in version. Residual reports from test-scope
+          Confluent jars are not in production runtime.
+        expires: 2027-06-30T00:00:00.000Z
   SNYK-JAVA-ORGECLIPSEJETTY-15426509:
     - '*':
         reason: >-
