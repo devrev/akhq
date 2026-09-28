@@ -42,10 +42,19 @@ configurations.all {
     exclude group: 'io.confluent.resourcemanager', module: 'apiserver-client'
     exclude group: 'io.confluent.observability', module: 'telemetry-client'
     exclude group: 'io.confluent.observability', module: 'telemetry-api'
+    // broker-plugins 8.1.0 pulls events-schema:0.377.0, which is not in the configured public repos.
+    // No AKHQ source references its classes; exclude it so runtimeClasspath can resolve.
+    exclude group: 'io.confluent.cloud', module: 'events-schema'
     // kafka-clients 4.0.x migrated to at.yawk.lz4; exclude the old org.lz4 to resolve capability conflict
     exclude group: 'org.lz4', module: 'lz4-java'
 
     resolutionStrategy {
+        // JLine has no published BOM at 3.30.15; align all its transitive modules here.
+        eachDependency { details ->
+            if (details.requested.group == 'org.jline') {
+                details.useVersion('3.30.15')
+            }
+        }
         force("org.apache.kafka:kafka-clients:" + kafkaVersion)
         force("org.apache.kafka:kafka-streams:" + kafkaVersion)
         force("org.apache.kafka:kafka-server-common:" + kafkaVersion)
@@ -53,37 +62,35 @@ configurations.all {
         force("org.apache.kafka:kafka-metadata:" + kafkaVersion)
         force("org.apache.kafka:kafka-server:" + kafkaVersion)
         force("org.apache.kafka:kafka-raft:" + kafkaVersion)
+        force("at.yawk.lz4:lz4-java:1.11.1")
         force("com.fasterxml.jackson.core:jackson-core:" + jacksonVersion)
         force("com.fasterxml.jackson.core:jackson-databind:" + jacksonVersion)
-        force("com.fasterxml.jackson.core:jackson-annotations:" + jacksonVersion)
+        // Jackson 2.21.x publishes annotations at 2.21, not the patch version.
+        force("com.fasterxml.jackson.core:jackson-annotations:2.21")
         force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:" + jacksonVersion)
+        force("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:" + jacksonVersion)
+        force("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:" + jacksonVersion)
         force("com.fasterxml.jackson.module:jackson-module-scala_" + kafkaScalaVersion + ":" + jacksonVersion)
 
-        force("io.netty:netty-codec-http:4.2.13.Final")
-        force("io.netty:netty-codec-http2:4.2.13.Final")
-        force("io.netty:netty-handler-proxy:4.2.13.Final")
-        force("io.netty:netty-transport-classes-epoll:4.2.13.Final")
-        force("io.netty:netty-codec-dns:4.2.13.Final")
-        force("io.netty:netty-all:4.2.13.Final")
         force("io.grpc:grpc-netty-shaded:1.75.0")
         force("org.apache.commons:commons-lang3:3.18.0")
-        force("io.vertx:vertx-core:4.5.27")
-        force("ch.qos.logback:logback-core:1.5.25")
-        force("ch.qos.logback:logback-classic:1.5.25")
+        force("org.codehaus.plexus:plexus-utils:3.6.1")
+        force("io.vertx:vertx-core:4.5.30")
+        force("ch.qos.logback:logback-core:" + logbackVersion)
+        force("ch.qos.logback:logback-classic:" + logbackVersion)
         force("com.nimbusds:nimbus-jose-jwt:9.37.4")
         force("commons-beanutils:commons-beanutils:1.11.0")
-        force("org.apache.logging.log4j:log4j-api:2.25.4")
-        force("org.apache.logging.log4j:log4j-core:2.25.4")
-        force("org.apache.httpcomponents.core5:httpcore5-h2:5.3.5")
+        force("org.apache.logging.log4j:log4j-api:" + log4jVersion)
+        force("org.apache.logging.log4j:log4j-core:" + log4jVersion)
+        // HttpClient 5.6.4 manages HttpCore 5.4.3; keep its runtime modules aligned.
+        force("org.apache.httpcomponents.client5:httpclient5:5.6.4")
+        force("org.apache.httpcomponents.core5:httpcore5:5.4.3")
+        force("org.apache.httpcomponents.core5:httpcore5-h2:5.4.3")
+        force("org.apache.httpcomponents.core5:httpcore5-reactive:5.4.3")
         force("org.bouncycastle:bcpkix-jdk18on:1.84")
         force("org.bouncycastle:bcprov-jdk18on:1.84")
         force("org.bouncycastle:bc-fips:2.1.2")
         force("org.apache.zookeeper:zookeeper:3.9.5")
-        force("org.eclipse.jetty:jetty-http:12.0.33")
-        force("org.eclipse.jetty:jetty-server:12.0.33")
-        force("org.eclipse.jetty:jetty-client:12.0.33")
-        force("org.eclipse.jetty:jetty-io:12.0.33")
-        force("org.eclipse.jetty:jetty-util:12.0.33")
     }
 }
 
@@ -113,6 +120,11 @@ micronaut {
  * Dependencies
  **********************************************************************************************************************/
 dependencies {
+    // Align all Netty modules, including transitive ones, on the patched release.
+    implementation(enforcedPlatform("io.netty:netty-bom:" + nettyVersion))
+    // Align Jetty, including jetty-security, on the patched 12.0.x release.
+    implementation(enforcedPlatform("org.eclipse.jetty:jetty-bom:" + jettyVersion))
+
     // lombok
     annotationProcessor("org.projectlombok:lombok:" + lombokVersion)
     compileOnly("org.projectlombok:lombok:" + lombokVersion)
@@ -234,13 +246,13 @@ test {
 }
 
 dependencies {
-    testImplementation 'ch.qos.logback:logback-classic:1.5.25'
-    testImplementation 'ch.qos.logback:logback-core:1.5.25'
+    testImplementation('ch.qos.logback:logback-classic:' + logbackVersion)
+    testImplementation('ch.qos.logback:logback-core:' + logbackVersion)
 
     // Log4j dependencies needed by KsqlDB at test runtime
     // KsqlDB requires actual Log4j implementation, not bridges
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-api:2.25.3'
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.25.3'
+    testRuntimeOnly('org.apache.logging.log4j:log4j-api:' + log4jVersion)
+    testRuntimeOnly('org.apache.logging.log4j:log4j-core:' + log4jVersion)
 
     // micronaut test
     testAnnotationProcessor "org.projectlombok:lombok:" + lombokVersion
@@ -336,6 +348,13 @@ shadowJar {
     mergeServiceFiles()
     zip64 true
     mainClassName = "org.akhq.App"
+}
+
+tasks.register('copyShadowJar', Copy) {
+    dependsOn tasks.named('shadowJar')
+    from(tasks.named('shadowJar').flatMap { it.archiveFile })
+    into(layout.projectDirectory.dir('docker/app'))
+    rename { 'akhq.jar' }
 }
 
 processResources.dependsOn ":client:installFrontend"
