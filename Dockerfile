@@ -1,4 +1,4 @@
-FROM 173672169127.dkr.ecr.us-east-1.amazonaws.com/devrev/base-java-dev:stable
+FROM 173672169127.dkr.ecr.us-east-1.amazonaws.com/devrev/base-java-dev-fips:stable
 
 HEALTHCHECK --interval=1m --timeout=30s --retries=3 \
   CMD curl --fail http://localhost:28081/health || exit 1
